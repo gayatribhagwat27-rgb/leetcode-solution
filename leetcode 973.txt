@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 1000
+
+typedef struct {
+    int x, y;
+    int dist;
+} Point;
+
+Point heap[MAX];
+int size = 0;
+
+void swap(Point *a, Point *b) {
+    Point temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void insert(Point p) {
+    int i = size++;
+    heap[i] = p;
+
+    while (i > 0) {
+        int parent = (i - 1) / 2;
+
+        if (heap[parent].dist >= heap[i].dist)
+            break;
+
+        swap(&heap[parent], &heap[i]);
+        i = parent;
+    }
+}
+
+void heapify(int i) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < size && heap[left].dist > heap[largest].dist)
+        largest = left;
+
+    if (right < size && heap[right].dist > heap[largest].dist)
+        largest = right;
+
+    if (largest != i) {
+        swap(&heap[i], &heap[largest]);
+        heapify(largest);
+    }
+}
+
+Point removeMax() {
+    Point max = heap[0];
+    heap[0] = heap[size - 1];
+    size--;
+    heapify(0);
+    return max;
+}
+
+int main() {
+    int n, k;
+
+    printf("Enter number of points: ");
+    scanf("%d", &n);
+
+    Point points[MAX];
+
+    printf("Enter x and y coordinates:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d %d", &points[i].x, &points[i].y);
+        points[i].dist = points[i].x * points[i].x +
+                         points[i].y * points[i].y;
+    }
+
+    printf("Enter k: ");
+    scanf("%d", &k);
+
+    if (k < 1 || k > n || n > MAX) {
+        printf("Invalid input\n");
+        return 0;
+    }
+
+    for (int i = 0; i < n; i++) {
+        insert(points[i]);
+
+        if (size > k)
+            removeMax();
+    }
+
+    printf("The %d closest points are:\n", k);
+
+    while (size > 0) {
+        Point p = removeMax();
+        printf("[%d, %d]\n", p.x, p.y);
+    }
+
+    return 0;
+}
